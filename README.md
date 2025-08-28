@@ -1,2 +1,1 @@
-# shopify-clone
-learning
+shopify
