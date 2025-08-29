@@ -1,0 +1,636 @@
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
+
+  .custom-collection {
+    gap: 30px;
+    display: flex;
+    justify-content: center;
+  }
+
+  .product {
+    background-color: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    position: relative;
+    min-width: 320px;
+  }
+
+  .product-image-container {
+    position: relative;
+    overflow: hidden;
+    height: 300px;
+  }
+
+  .product-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .product-info {
+    padding: 20px;
+    position: relative;
+    cursor: pointer;
+  }
+
+  .product-title {
+    margin: 0 0 10px;
+    font-size: 20px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  a.product-link {
+    text-decoration: none;
+    cursor: pointer;
+    color: black;
+    font: inherit;
+  }
+
+  .product-price {
+    font-weight: 300;
+    font-size: 24px;
+    color: #4a4a4a;
+    margin-bottom: 15px;
+  }
+
+  .color-options {
+    display: flex;
+    gap: 12px;
+    margin-top: 15px;
+  }
+
+  .color-option {
+    width: 25px;
+    height: 25px;
+    border-radius: 50%;
+    cursor: pointer;
+    border: 2px solid transparent;
+    position: relative;
+    display: block !important;
+    border: 1px solid #000;
+  }
+
+  .size-options {
+    gap: 2px;
+  }
+
+  .color-option::after {
+    content: '';
+    position: absolute;
+    top: -4px;
+    left: -4px;
+    right: -4px;
+    bottom: -4px;
+    border-radius: 50%;
+    border: 2px solid transparent;
+  }
+
+  .color-option.active::after {
+    border-color: #333;
+    transform: scale(1.2);
+  }
+
+  .hide {
+    display: none;
+  }
+
+  .add-to-cart {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    background-color: #333;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 25px;
+    font-weight: 600;
+    cursor: pointer;
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .selected-color {
+    margin-top: 10px;
+    font-size: 16px;
+    font-weight: 400;
+    color: #4a4a4a;
+  }
+
+  @media (max-width: 768px) {
+    body {
+      padding: 20px;
+    }
+
+    .custom-collection {
+      gap: 20px;
+      flex-direction: column;
+    }
+
+    .product-image-container {
+      height: 250px;
+    }
+  }
+</style>
+
+<div class="custom-collection" id="productCollection"></div>
+
+<script>
+  let storeBackgroundColors = {};
+  // Retrieve colors from metafields via Liquid
+  {% assign liquiProducts = section.settings.collection.products %}
+  {% for prod in liquiProducts %}
+    {% for variant in prod.variants %}
+      {% assign colorValue = variant.metafields.custom.variant_color.value | default: '' %}
+      {% if colorValue != '' %}
+        storeBackgroundColors[{{ variant.id }}] = "{{ colorValue }}"
+      {% endif %}
+    {% endfor %}
+  {% endfor %}
+  // Log storeBackgroundColors for debugging
+  console.log('storeBackgroundColors:', storeBackgroundColors);
+
+  const originalProducts = {{ section.settings.collection.products | json }}.slice(0, {{ section.settings.product-limit }});
+
+  let allProds = originalProducts.map(prod => {
+    let temporaryStorage = {};
+    let arrayForColors = [];
+    let arrayForSizes = [];
+    prod.variants.forEach(vari => {
+      if (vari.option1 != 'Default Title') {
+        if (!temporaryStorage[vari.option1]) {
+          temporaryStorage[vari.option1] = { ...vari };
+          arrayForColors.push(vari);
+        }
+        if (!temporaryStorage[vari.option2]) {
+          temporaryStorage[vari.option2] = { ...vari };
+          arrayForSizes.push(vari.option2);
+        }
+      }
+    });
+    // Log variant data for debugging
+    console.log(`Product: ${prod.title}`, {
+      variants: arrayForColors,
+      sizes: arrayForSizes
+    });
+    return { ...prod, variants: arrayForColors, sizes: arrayForSizes };
+  });
+
+  const products = allProds;
+
+  // Map option1 values to colors as a fallback
+  const colorMap = {
+    'Red': '#FF0000',
+    'Blue': '#0000FF',
+    'Brown': '#A52A2A',
+    'Pink': '#FFC1CC',
+    'Green': '#008000',
+    'Gold':'#ffa500',
+    'Navy':'#000080',
+    'Orange':'#ff7500'
+  };
+
+  function createProductElement(product) {
+    const productElement = document.createElement('div');
+    productElement.className = 'product';
+    productElement.innerHTML = `
+      <div class="product-image-container">
+        <img src="${product.variants.length > 1 && product.variants[0].featured_image?.src ? product.variants[0].featured_image.src : product.images[0]}" alt="${product.title}" class="product-image" loading="lazy">
+      </div>
+      <div class="product-info" data-product-handle="${product.handle}">
+        <a class="product-link" href="/products/${product.handle}"><h3 class="product-title">${product.title}</h3></a>
+        <p class="product-price">${product.price.toFixed(2)}</p>
+        <div class="color-options ${product.variants.length <= 1 ? 'hide' : ''}">
+          ${product.variants.length && product.variants.map((variant, index) => {
+            const colorFromMetafield = storeBackgroundColors[variant.id];
+            const colorFromOption = colorMap[variant.option1] || '#D3D3D3'; // Fallback to light gray if no match
+            const appliedColor = colorFromMetafield || colorFromOption;
+            const label = variant.option1 || 'Unknown';
+            console.log(`Variant ID: ${variant.id}, Option1: ${variant.option1}, Color from Metafield: ${colorFromMetafield}, Applied Color: ${appliedColor}, Label: ${label}`);
+            return `
+              <div class="${variant.option1 === 'Default Title' ? 'hide' : 'color-option'} ${index === 0 ? 'active' : ''}"
+                   style="background-color: ${appliedColor};"
+                   data-color-index="${index}"
+                   data-variant-id="${variant.id}"
+                   data-label="${label}"
+                   ></div>
+            `;
+          }).join('')}
+        </div>
+        <div class="color-options size-options ${product.sizes.length <= 1 ? 'hide' : ''}">
+          ${product.sizes.length && product.sizes.map((size, index) => `
+            <div style="background-color: #f1f1f2; display: flex; justify-content: center; align-items: center; height: 22px; border-radius: 10px;">
+              <p style="font-size: 14px; padding: 0 6px;">${size}</p>
+            </div>
+          `).join('')}
+        </div>
+        <span class="selected-color"></span>
+        <button class="add-to-cart">Add to Cart</button>
+      </div>
+    `;
+
+    function addToCart(data) {
+      let formData = {
+        'items': [{
+          'id': data,
+          'quantity': 1
+        }]
+      };
+      fetch(window.Shopify.routes.root + 'cart/add.js', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(formData)
+      })
+        .then(response => {
+          window.location.href = '/cart';
+          return response.json();
+        })
+        .catch((error) => {
+          console.error('Error:', error);
+        });
+    }
+
+    // Add event listeners for add-to-cart buttons
+    productElement.querySelector('.add-to-cart').addEventListener('click', async () => {
+      const colorOptions = productElement.querySelector('.color-options');
+      const activeColorOption = colorOptions.querySelector('.active');
+      let variantId = activeColorOption.dataset.variantId;
+      addToCart(variantId);
+    });
+
+    // Add event listener for color options to change image and active state
+    const colorOptions = productElement.querySelectorAll('.color-option');
+    const productImage = productElement.querySelector('.product-image');
+    const selectedColorSpan = productElement.querySelector('.selected-color');
+    colorOptions.forEach(option => {
+      option.addEventListener('click', () => {
+        const colorIndex = option.getAttribute('data-color-index');
+        const variant = product.variants[colorIndex];
+        // Only change image if variant has a valid featured_image.src
+        if (variant.featured_image?.src) {
+          productImage.src = variant.featured_image.src;
+          console.log(`Color clicked: ${variant.option1}, Image: ${variant.featured_image.src}`);
+        } else {
+          console.log(`Color clicked: ${variant.option1}, No valid image found`);
+        }
+        colorOptions.forEach(opt => opt.classList.remove('active'));
+        option.classList.add('active');
+        // Update selected color label
+        const selectedLabel = option.getAttribute('data-label');
+        selectedColorSpan.textContent = `Color: ${selectedLabel}`;
+      });
+    });
+
+    return productElement;
+  }
+
+  function renderProducts() {
+    const collectionElement = document.getElementById('productCollection');
+    products.forEach(product => {
+      const productElement = createProductElement(product);
+      collectionElement.appendChild(productElement);
+    });
+  }
+
+  renderProducts();
+</script>
+
+{% schema %}
+{
+  "name": "New Collection List",
+  "class": "section",
+  "tag": "section",
+  "settings": [
+    {
+      "type": "collection",
+      "id": "collection",
+      "label": "select type of coolection"
+    },
+    {
+      "type": "number",
+      "id": "product-limit",
+      "label": "products to show",
+      "default": 3
+    }
+  ],
+  "presets": [
+    {
+      "name": "New Collection List",
+      "settings": {}
+    }
+  ]
+}
+{% endschema %}
+{% comment %}
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
+
+    .custom-collection {
+      gap: 30px;
+      display: flex;
+      justify-content: center;
+    }
+
+    .product {
+      background-color: white;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+      position: relative;
+      min-width: 320px;
+    }
+
+    .product-image-container {
+      position: relative;
+      overflow: hidden;
+      height: 300px;
+    }
+
+    .product-image {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .product-info {
+      padding: 20px;
+      position: relative;
+      cursor: pointer;
+    }
+
+    .product-title {
+      margin: 0 0 10px;
+      font-size: 20px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    a.product-link {
+      text-decoration: none;
+      cursor: pointer;
+      color: black;
+      font: inherit;
+    }
+
+    .product-price {
+      font-weight: 300;
+      font-size: 24px;
+      color: #4a4a4a;
+      margin-bottom: 15px;
+    }
+
+    .color-options {
+      display: flex;
+      gap: 12px;
+      margin-top: 15px;
+    }
+
+    .color-option {
+      width: 25px;
+      height: 25px;
+      border-radius: 50%;
+      cursor: pointer;
+      border: 2px solid transparent;
+      position: relative;
+      display: block !important;
+      border: 1px solid #000;
+    }
+
+    .size-options {
+      gap: 2px;
+    }
+
+    .color-option::after {
+      content: '';
+      position: absolute;
+      top: -4px;
+      left: -4px;
+      right: -4px;
+      bottom: -4px;
+      border-radius: 50%;
+      border: 2px solid transparent;
+    }
+
+    .color-option.active::after {
+      border-color: #333;
+      transform: scale(1.2);
+    }
+
+    .hide {
+      display: none;
+    }
+
+    .add-to-cart {
+      position: absolute;
+      bottom: 20px;
+      right: 20px;
+      background-color: #333;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 25px;
+      font-weight: 600;
+      cursor: pointer;
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    @media (max-width: 768px) {
+      body {
+        padding: 20px;
+      }
+
+      .custom-collection {
+        gap: 20px;
+        flex-direction: column;
+      }
+
+      .product-image-container {
+        height: 250px;
+      }
+    }
+  </style>
+
+  <div class="custom-collection" id="productCollection"></div>
+
+  <script>
+    let storeBackgroundColors = {};
+    // Can only retrieve metafields via liquid, so we'll push them into this JS object
+    {% assign liquiProducts = section.settings.collection.products %}
+    {% for prod in liquiProducts %}
+      {% for variant in prod.variants %}
+        {% assign colorValue = variant.metafields.custom.variant_color.value | default: '' %}
+        {% if colorValue != '' %}
+          storeBackgroundColors[{{ variant.id }}] = "{{ colorValue }}"
+        {% endif %}
+      {% endfor %}
+    {% endfor %}
+    // Log storeBackgroundColors for debugging
+    console.log('storeBackgroundColors:', storeBackgroundColors);
+
+    const originalProducts = {{ section.settings.collection.products | json }}.slice(0, {{ section.settings.product-limit }});
+
+    let allProds = originalProducts.map(prod => {
+      let temporaryStorage = {};
+      let arrayForColors = [];
+      let arrayForSizes = [];
+      prod.variants.forEach(vari => {
+        if (vari.option1 != 'Default Title') {
+          if (!temporaryStorage[vari.option1]) {
+            temporaryStorage[vari.option1] = { ...vari };
+            arrayForColors.push(vari);
+          }
+          if (!temporaryStorage[vari.option2]) {
+            temporaryStorage[vari.option2] = { ...vari };
+            arrayForSizes.push(vari.option2);
+          }
+        }
+      });
+      // Log variant data for debugging
+      console.log(`Product: ${prod.title}`, {
+        variants: arrayForColors,
+        sizes: arrayForSizes
+      });
+      return { ...prod, variants: arrayForColors, sizes: arrayForSizes };
+    });
+
+    const products = allProds;
+
+    // Map option1 values to colors as a fallback
+    const colorMap = {
+      'Blue': '#0000FF',
+      'Brown': '#A52A2A',
+      'Pink': '#FFC1CC'
+    };
+
+    function createProductElement(product) {
+      const productElement = document.createElement('div');
+      productElement.className = 'product';
+      productElement.innerHTML = `
+        <div class="product-image-container">
+          <img src="${product.variants.length > 1 && product.variants[0].featured_image?.src ? product.variants[0].featured_image.src : product.images[0]}" alt="${product.title}" class="product-image" loading="lazy">
+        </div>
+        <div class="product-info" data-product-handle="${product.handle}">
+          <a class="product-link" href="/products/${product.handle}"><h3 class="product-title">${product.title}</h3></a>
+          <p class="product-price">$${product.price.toFixed(2)}</p>
+          <div class="color-options ${product.variants.length <= 1 ? 'hide' : ''}">
+            ${product.variants.length && product.variants.map((variant, index) => {
+              const colorFromMetafield = storeBackgroundColors[variant.id];
+              const colorFromOption = colorMap[variant.option1] || '#D3D3D3'; // Fallback to light gray if no match
+              const appliedColor = colorFromMetafield || colorFromOption;
+              console.log(`Variant ID: ${variant.id}, Option1: ${variant.option1}, Color from Metafield: ${colorFromMetafield}, Applied Color: ${appliedColor}`);
+              return `
+                <div class="${variant.option1 === 'Default Title' ? 'hide' : 'color-option'} ${index === 0 ? 'active' : ''}"
+                     style="background-color: ${appliedColor};"
+                     data-color-index="${index}"
+                     data-variant-id="${variant.id}"
+                     ></div>
+              `;
+            }).join('')}
+          </div>
+          <div class="color-options size-options ${product.sizes.length <= 1 ? 'hide' : ''}">
+            ${product.sizes.length && product.sizes.map((size, index) => `
+              <div style="background-color: #f1f1f2; display: flex; justify-content: center; align-items: center; height: 22px; border-radius: 10px;">
+                <p style="font-size: 14px; padding: 0 6px;">${size}</p>
+              </div>
+            `).join('')}
+          </div>
+          <button class="add-to-cart">Add to Cart</button>
+        </div>
+      `;
+
+      function addToCart(data) {
+        let formData = {
+          'items': [{
+            'id': data,
+            'quantity': 1
+          }]
+        };
+        fetch(window.Shopify.routes.root + 'cart/add.js', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(formData)
+        })
+          .then(response => {
+            window.location.href = '/cart';
+            return response.json();
+          })
+          .catch((error) => {
+            console.error('Error:', error);
+          });
+      }
+
+      // Add event listeners for add-to-cart buttons
+      productElement.querySelector('.add-to-cart').addEventListener('click', async () => {
+        const colorOptions = productElement.querySelector('.color-options');
+        const activeColorOption = colorOptions.querySelector('.active');
+        let variantId = activeColorOption.dataset.variantId;
+        addToCart(variantId);
+      });
+
+      // Add event listener for color options to change image and active state
+      const colorOptions = productElement.querySelectorAll('.color-option');
+      const productImage = productElement.querySelector('.product-image');
+      colorOptions.forEach(option => {
+        option.addEventListener('click', () => {
+          const colorIndex = option.getAttribute('data-color-index');
+          const variant = product.variants[colorIndex];
+          // Only change image if variant has a valid featured_image.src
+          if (variant.featured_image?.src) {
+            productImage.src = variant.featured_image.src;
+            console.log(`Color clicked: ${variant.option1}, Image: ${variant.featured_image.src}`);
+          } else {
+            console.log(`Color clicked: ${variant.option1}, No valid image found`);
+          }
+          colorOptions.forEach(opt => opt.classList.remove('active'));
+          option.classList.add('active');
+        });
+      });
+
+      return productElement;
+    }
+
+    function renderProducts() {
+      const collectionElement = document.getElementById('productCollection');
+      products.forEach(product => {
+        const productElement = createProductElement(product);
+        collectionElement.appendChild(productElement);
+      });
+    }
+
+    renderProducts();
+  </script>
+
+  {% schema %}
+  {
+    "name": "New Collection List",
+    "class": "section",
+    "tag": "section",
+    "settings": [
+      {
+        "type": "collection",
+        "id": "collection",
+        "label": "select type of coolection"
+      },
+      {
+        "type": "number",
+        "id": "product-limit",
+        "label": "products to show",
+        "default": 3
+      }
+    ],
+    "presets": [
+      {
+        "name": "New Collection List",
+        "settings": {},
+        "blocks": []
+      }
+    ]
+  }
+  {% endschema %}
+{% endcomment %}
