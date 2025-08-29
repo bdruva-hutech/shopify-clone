@@ -71,11 +71,20 @@
         "color_scheme": "light",
         "pagination_style": "dots"
       }
+    },
+    "new_collection_list_6Je7BD": {
+      "type": "new-collection-list",
+      "name": "New Collection List",
+      "settings": {
+        "collection": "summer-collections",
+        "product-limit": 3
+      }
     }
   },
   "order": [
     "featured_collection",
     "custom_contact",
-    "image_slider_show_txkqnc"
+    "image_slider_show_txkqnc",
+    "new_collection_list_6Je7BD"
   ]
 }
