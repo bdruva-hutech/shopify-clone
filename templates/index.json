@@ -77,12 +77,24 @@
         "collection": "summer-collections",
         "product-limit": 4
       }
+    },
+    "page_hnUj9H": {
+      "type": "page",
+      "name": "t:sections.page.presets.name",
+      "settings": {
+        "page": "",
+        "heading_size": "h1",
+        "color_scheme": "",
+        "padding_top": 36,
+        "padding_bottom": 36
+      }
     }
   },
   "order": [
     "featured_collection",
     "custom_contact",
     "image_slider_show_txkqnc",
-    "new_collection_list_6Je7BD"
+    "new_collection_list_6Je7BD",
+    "page_hnUj9H"
   ]
 }
