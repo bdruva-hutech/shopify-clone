@@ -44,7 +44,7 @@
         "heading": "Emergency contact",
         "show_first_name": true,
         "show_second_name": true,
-        "color_scheme": "",
+        "color_scheme": "light",
         "padding_top": 36,
         "padding_bottom": 36
       }
@@ -53,14 +53,12 @@
       "type": "image-slider-show",
       "name": "Image Banner Slider",
       "settings": {
-        "image_1": "shopify://shop_images/shopify_20stores_3595a226-fc71-4f75-ad3f-48ba0aaaafec.webp",
         "link_1": "shopify://collections",
         "show_button_1": true,
         "button_text_1": "Shop Now",
         "link_2": "shopify://collections/all",
         "show_button_2": true,
         "button_text_2": "Shop Now",
-        "image_3": "shopify://shop_images/maxresdefault.jpg",
         "link_3": "shopify://policies/privacy-policy",
         "show_button_3": true,
         "button_text_3": "Shop Now",
@@ -71,11 +69,32 @@
         "color_scheme": "light",
         "pagination_style": "dots"
       }
+    },
+    "new_collection_list_6Je7BD": {
+      "type": "new-collection-list",
+      "name": "New Collection List",
+      "settings": {
+        "collection": "womens",
+        "product-limit": 4
+      }
+    },
+    "page_hnUj9H": {
+      "type": "page",
+      "name": "t:sections.page.presets.name",
+      "settings": {
+        "page": "",
+        "heading_size": "h1",
+        "color_scheme": "",
+        "padding_top": 36,
+        "padding_bottom": 36
+      }
     }
   },
   "order": [
     "featured_collection",
     "custom_contact",
-    "image_slider_show_txkqnc"
+    "image_slider_show_txkqnc",
+    "new_collection_list_6Je7BD",
+    "page_hnUj9H"
   ]
 }

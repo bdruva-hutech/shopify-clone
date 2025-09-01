@@ -1,3 +1,12 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
 {
   "sections": {
     "main": {
@@ -6,9 +15,42 @@
         "padding_top": 28,
         "padding_bottom": 28
       }
+    },
+    "new_collection_list_Uhr9GG": {
+      "type": "new-collection-list",
+      "name": "New Collection List",
+      "settings": {
+        "collection": "summer-collections",
+        "product-limit": 3
+      }
+    },
+    "image_slider_show_yYXjVd": {
+      "type": "image-slider-show",
+      "name": "Image Banner Slider",
+      "settings": {
+        "image_1": "shopify://shop_images/maxresdefault.jpg",
+        "link_1": "shopify://collections/summer-collections",
+        "show_button_1": true,
+        "button_text_1": "Shop Now",
+        "image_2": "shopify://shop_images/shopify_20stores_3595a226-fc71-4f75-ad3f-48ba0aaaafec.webp",
+        "link_2": "shopify://policies/privacy-policy",
+        "show_button_2": true,
+        "button_text_2": "Shop Now",
+        "link_3": "",
+        "show_button_3": true,
+        "button_text_3": "Shop Now",
+        "button_position_1": "bottom-left",
+        "button_position_2": "bottom-left",
+        "button_position_3": "bottom-left",
+        "slider_width": "full",
+        "color_scheme": "light",
+        "pagination_style": "dots"
+      }
     }
   },
   "order": [
-    "main"
+    "main",
+    "new_collection_list_Uhr9GG",
+    "image_slider_show_yYXjVd"
   ]
 }

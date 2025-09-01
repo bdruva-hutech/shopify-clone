@@ -56,40 +56,25 @@
           "type": "description",
           "settings": {}
         },
-        "collapsible-row-0": {
-          "type": "collapsible_tab",
+        "icon_with_text_8K77j6": {
+          "type": "icon-with-text",
           "settings": {
-            "heading": "Materials",
-            "icon": "bottle",
-            "content": "",
-            "page": ""
-          }
-        },
-        "collapsible-row-1": {
-          "type": "collapsible_tab",
-          "settings": {
-            "heading": "Shipping & Returns",
-            "icon": "truck",
-            "content": "",
-            "page": ""
-          }
-        },
-        "collapsible-row-2": {
-          "type": "collapsible_tab",
-          "settings": {
-            "heading": "Dimensions",
-            "icon": "ruler",
-            "content": "",
-            "page": ""
+            "layout": "horizontal",
+            "icon_1": "heart",
+            "heading_1": "wishlist",
+            "icon_2": "return",
+            "heading_2": "Heading",
+            "icon_3": "truck",
+            "heading_3": "Heading"
           }
         },
         "collapsible-row-3": {
           "type": "collapsible_tab",
           "settings": {
-            "heading": "Care Instructions",
+            "heading": "Wishlist",
             "icon": "heart",
             "content": "",
-            "page": ""
+            "page": "wishlist"
           }
         },
         "share": {
@@ -108,10 +93,7 @@
         "quantity_selector",
         "buy_buttons",
         "description",
-        "collapsible-row-0",
-        "collapsible-row-1",
-        "collapsible-row-2",
-        "collapsible-row-3",
+        "icon_with_text_8K77j6",
         "share"
       ],
       "settings": {
