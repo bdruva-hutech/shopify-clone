@@ -74,7 +74,7 @@
       "type": "new-collection-list",
       "name": "New Collection List",
       "settings": {
-        "collection": "summer-collections",
+        "collection": "womens",
         "product-limit": 4
       }
     },
