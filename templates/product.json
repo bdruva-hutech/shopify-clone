@@ -88,8 +88,8 @@
           "settings": {
             "heading": "wishlist",
             "icon": "heart",
-            "content": "",
-            "page": ""
+            "content": "<p>wishlist</p>",
+            "page": "wishlist"
           }
         },
         "share": {
