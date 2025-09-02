@@ -51,6 +51,10 @@
             "show_dynamic_checkout": true,
             "show_gift_card_recipient": true
           }
+        },//i have added wishlist icon on collection using app //gropulse
+        "gropulse_wishlist_gropulse_wishlist_button_YJUV7c": {
+          "type": "shopify://apps/gropulse-wishlist/blocks/gropulse-wishlist-button/d606b448-832c-4b0a-adbb-21c7fa132df1",
+          "settings": {}
         },
         "description": {
           "type": "description",
@@ -92,6 +96,7 @@
         "variant_picker",
         "quantity_selector",
         "buy_buttons",
+        "gropulse_wishlist_gropulse_wishlist_button_YJUV7c",
         "description",
         "icon_with_text_8K77j6",
         "share"
