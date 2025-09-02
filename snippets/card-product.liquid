@@ -40,7 +40,32 @@
       assign ratio = 1
     endif
   -%}
-  <div class="card-wrapper product-card-wrapper underline-links-hover">
+  <div class="card-wrapper product-card-wrapper underline-links-hover" style="position: relative;">
+    {% comment %}
+      i have added wishlist
+    {% endcomment %}
+    <div class="wishlist-btn-wrapper" style="position:absolute; top:10px; left:10px; z-index:10;">
+      <button
+        class="wishlist-btn"
+        data-product-handle="{{ card_product.handle }}"
+        style="background:none; border:none; padding:0; margin:0; cursor:pointer; outline:none;"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          width="20"
+          height="20"
+          class="feather feather-heart"
+        >
+          <path d="M20.8 4.6c-1.7-1.7-4.6-1.7-6.3 0L12 7.1l-2.5-2.5c-1.7-1.7-4.6-1.7-6.3 0-1.7 1.7-1.7 4.6 0 6.3L12 21l8.8-10.1c1.7-1.7 1.7-4.6 0-6.3z"></path>
+        </svg>
+      </button>
+    </div>
     <div
       class="
         card card--{{ settings.card_style }}
@@ -622,3 +647,156 @@
     </div>
   </div>
 {%- endif -%}
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const wishlistButtons = document.querySelectorAll('.wishlist-btn'); // fixed selector
+    const removeButtons = document.querySelectorAll('.remove-wt-btn');
+    const wishlistCountEl = document.getElementById('wt-count');
+    let wishlist = JSON.parse(localStorage.getItem('wishlist')) || [];
+
+    // Initialize state
+    wishlistButtons.forEach((button) => {
+      const handle = button.dataset.productHandle;
+      if (wishlist.includes(handle)) {
+        button.classList.add('active');
+      }
+
+      button.addEventListener('click', function () {
+        const handle = this.dataset.productHandle;
+
+        if (!wishlist.includes(handle)) {
+          wishlist.push(handle);
+          this.classList.add('active');
+          showSuccessNotification('Added to Wishlist.');
+        } else {
+          wishlist = wishlist.filter((h) => h !== handle);
+          this.classList.remove('active');
+          showSuccessNotification('Removed from Wishlist.');
+        }
+
+        localStorage.setItem('wishlist', JSON.stringify(wishlist));
+        updateWishlistCount();
+      });
+    });
+
+    // Wishlist page remove buttons
+    removeButtons.forEach((button) => {
+      button.addEventListener('click', function () {
+        const handle = this.dataset.productHandle;
+
+        if (wishlist.includes(handle)) {
+          wishlist = wishlist.filter((h) => h !== handle);
+          localStorage.setItem('wishlist', JSON.stringify(wishlist));
+
+          showSuccessNotification('Removed from Wishlist.');
+
+          document
+            .querySelectorAll(`.wishlist-btn[data-product-handle="${handle}"]`)
+            .forEach((btn) => btn.classList.remove('active'));
+
+          updateWishlistCount();
+        }
+      });
+    });
+
+    function updateWishlistCount() {
+      if (!wishlistCountEl) return;
+      if (wishlist.length > 0) {
+        wishlistCountEl.textContent = wishlist.length;
+        wishlistCountEl.style.display = 'flex';
+      } else {
+        wishlistCountEl.textContent = '';
+        wishlistCountEl.style.display = 'none';
+      }
+    }
+
+    function showSuccessNotification(message) {
+      const existing = document.getElementById('success-notification');
+      if (existing) existing.remove();
+
+      const notification = document.createElement('div');
+      notification.id = 'success-notification';
+      notification.className = 'success-notification';
+      notification.innerHTML = `
+      <div class="success-msg">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" class="icon icon-checkmark" viewBox="0 0 12 9">
+          <path fill="currentColor" d="M11.35.643a.5.5 0 0 1 .006.707l-6.77 6.886a.5.5 0 0 1-.719-.006L.638 4.845a.5.5 0 1 1 .724-.69l2.872 3.011 6.41-6.517a.5.5 0 0 1 .707-.006z"/>
+        </svg>
+        <span>${message}</span>
+      </div>
+    `;
+
+      document.body.appendChild(notification);
+
+      setTimeout(() => {
+        notification.style.opacity = '0';
+        setTimeout(() => notification.remove(), 1000);
+      }, 2000);
+    }
+
+    updateWishlistCount();
+  });
+</script>
+
+{% comment %}
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const wishlistButtons = document.querySelectorAll('.wishlist-btn');
+
+      wishlistButtons.forEach((btn) => {
+        const svg = btn.querySelector('svg');
+        const productHandle = btn.getAttribute('data-product-handle');
+
+        // Restore state from localStorage
+        let wishlist = JSON.parse(localStorage.getItem('wishlist')) || [];
+        if (wishlist.includes(productHandle)) {
+          btn.classList.add('active');
+          svg.setAttribute('fill', 'red');
+        }
+
+        btn.addEventListener('click', function () {
+          let wishlist = JSON.parse(localStorage.getItem('wishlist')) || [];
+          const isActive = btn.classList.toggle('active');
+
+          if (isActive) {
+            svg.setAttribute('fill', 'red');
+            showToast('Removed from wishlist');
+
+            if (!wishlist.includes(productHandle)) {
+              wishlist.push(productHandle);
+            }
+          } else {
+            svg.setAttribute('fill', 'none');
+            showToast('Added to wishlist');
+
+            wishlist = wishlist.filter((h) => h !== productHandle);
+          }
+
+          localStorage.setItem('wishlist', JSON.stringify(wishlist));
+        });
+      });
+
+      function showToast(message) {
+        const toast = document.createElement('div');
+        toast.innerText = message;
+        toast.style.position = 'fixed';
+        toast.style.bottom = '20px';
+        toast.style.right = '20px';
+        toast.style.background = '#333';
+        toast.style.color = '#fff';
+        toast.style.padding = '10px 15px';
+        toast.style.borderRadius = '5px';
+        toast.style.zIndex = '9999';
+        toast.style.opacity = '0';
+        toast.style.transition = 'opacity 0.3s ease';
+
+        document.body.appendChild(toast);
+        setTimeout(() => (toast.style.opacity = '1'), 100);
+        setTimeout(() => {
+          toast.style.opacity = '0';
+          setTimeout(() => toast.remove(), 300);
+        }, 2000);
+      }
+    });
+  </script>
+{% endcomment %}
